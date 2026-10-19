@@ -85,6 +85,41 @@ function initializeBot() {
   Logger.log('Ботты Telegram-да ашып, /start арқылы сынаңыз.');
 }
 
+/**
+ * Telegram webhook күйін қауіпсіз тексеру.
+ * BOT_TOKEN арқылы getWebhookInfo шақырады, бірақ webhook URL/secret-ті log-қа шығармайды.
+ * Apps Script редакторында осы функцияны таңдап Run басыңыз.
+ */
+function checkWebhookStatus() {
+  if (!BOT_TOKEN || BOT_TOKEN.indexOf('PASTE_') === 0) {
+    throw new Error('BOT_TOKEN мәнін тексеріңіз.');
+  }
+  const response = UrlFetchApp.fetch(
+    'https://api.telegram.org/bot' + BOT_TOKEN + '/getWebhookInfo',
+    { muteHttpExceptions: true }
+  );
+  const status = response.getResponseCode();
+  let data;
+  try {
+    data = JSON.parse(response.getContentText());
+  } catch (err) {
+    throw new Error('Telegram жауабы JSON емес. HTTP ' + status);
+  }
+  if (status < 200 || status >= 300 || !data.ok) {
+    throw new Error('getWebhookInfo қатесі. HTTP ' + status + ': ' + response.getContentText());
+  }
+  const info = data.result || {};
+  const summary = {
+    webhookConfigured: Boolean(info.url),
+    pendingUpdateCount: info.pending_update_count == null ? null : info.pending_update_count,
+    lastErrorDate: info.last_error_date || null,
+    lastErrorMessage: info.last_error_message || 'Соңғы webhook қатесі көрсетілмеген',
+    allowedUpdates: info.allowed_updates || []
+  };
+  Logger.log(JSON.stringify(summary, null, 2));
+  return summary;
+}
+
 function doPost(e) {
   try {
     const incomingKey = e && e.parameter ? e.parameter.key : '';

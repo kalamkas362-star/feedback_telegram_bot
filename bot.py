@@ -92,7 +92,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
         "Сәлем! 👋 Сабақ соңындағы кері байланысқа қош келдің!\n\n"
         "3 қысқа сұраққа жауап бер. Жауабың келесі сабақтарды жақсартуға көмектеседі.\n\n"
-        "1-сұрақ. Бүгінгі сабақтан кейінгі көңіл күйің қандай?",
+        "<b>1-сұрақ. Бүгінгі сабақтан кейінгі көңіл күйің қандай?</b>",
+        parse_mode=ParseMode.HTML,
         reply_markup=MOOD_KEYBOARD,
     )
 
@@ -125,8 +126,9 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("mood:"):
         session["mood"] = data.partition(":")[2]
         await query.edit_message_text(
-            f"Көңіл күйің: {session['mood']}\n\n"
-            "2-сұрақ. Бүгінгі тақырыпты қаншалықты түсіндің?",
+            "Таңдауың қабылданды.\n\n"
+            "<b>2-сұрақ. Бүгінгі тақырыпты қаншалықты түсіндің?</b>",
+            parse_mode=ParseMode.HTML,
             reply_markup=UNDERSTANDING_KEYBOARD,
         )
         return
@@ -137,10 +139,10 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         session["understanding"] = data.partition(":")[2]
         await query.edit_message_text(
-            f"Түсіну деңгейі: {session['understanding']}\n\n"
-            "3-сұрақ. Сабақта не ұнады немесе нені жақсартуға болады?\n"
+            "<b>3-сұрақ. Сабақта не ұнады немесе нені жақсартуға болады?</b>\n\n"
             "Пікіріңді келесі хабарлама ретінде жаз. Пікір қалдырғың келмесе, "
             "төмендегі батырманы бас.",
+            parse_mode=ParseMode.HTML,
             reply_markup=COMMENT_KEYBOARD,
         )
         return
@@ -189,7 +191,7 @@ async def finish_feedback(user, chat_id: int, context: ContextTypes.DEFAULT_TYPE
     await context.bot.send_message(
         chat_id=chat_id,
         text="Рақмет! 🌟 Кері байланысың қабылданды.\n"
-             "Жауабың келесі сабақтарды жақсартуға көмектеседі.",
+             "Жауаптарың мен пікірің мұғалімге ғана жіберіледі.",
     )
 
     if ADMIN_CHAT_ID is None:

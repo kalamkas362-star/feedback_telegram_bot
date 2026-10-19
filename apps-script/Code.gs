@@ -24,9 +24,8 @@ const HEADERS = [
 ];
 
 function doGet() {
-  return ContentService.createTextOutput(
-    'Сабақ рефлексиясы ботының сервері жұмыс істеп тұр.'
-  );
+  // HtmlService ContentService-ке тән 302 redirect мәселесін болдырмауға көмектеседі.
+  return htmlResponse_('Сабақ рефлексиясы ботының сервері жұмыс істеп тұр.');
 }
 
 /**
@@ -91,18 +90,28 @@ function doPost(e) {
     const incomingKey = e && e.parameter ? e.parameter.key : '';
     const expectedKey = PROP.getProperty(WEBHOOK_KEY);
     if (!expectedKey || incomingKey !== expectedKey) {
-      return ContentService.createTextOutput('Forbidden');
+      return htmlResponse_('Forbidden');
     }
     if (!e || !e.postData || !e.postData.contents) {
-      return ContentService.createTextOutput('Empty request');
+      return htmlResponse_('Empty request');
     }
     const update = JSON.parse(e.postData.contents);
     handleUpdate_(update);
-    return ContentService.createTextOutput('ok');
+    return htmlResponse_('ok');
   } catch (err) {
     console.error('Webhook өңдеу қатесі: ' + err + '\n' + (err.stack || ''));
-    throw err;
+    return htmlResponse_('error');
   }
+}
+
+
+function htmlResponse_(text) {
+  const safeText = escapeHtml_(text);
+  return HtmlService.createHtmlOutput(
+    '<!doctype html><html><head><meta charset="utf-8"></head><body>' +
+    safeText +
+    '</body></html>'
+  );
 }
 
 function handleUpdate_(update) {
